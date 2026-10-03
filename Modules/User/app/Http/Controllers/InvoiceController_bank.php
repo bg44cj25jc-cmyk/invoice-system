@@ -163,12 +163,18 @@ class InvoiceController extends Controller
 
                 $subtotal += $invoiceItem->line_total_excl_vat;
                 $totalVat += ($invoiceItem->line_total_incl_vat - $invoiceItem->line_total_excl_vat);
+                $totalDiscount += (float) $item['price_excl_vat']
+                    * (float) $item['quantity']
+                    * ((float) ($item['discount'] ?? 0) / 100);
             }
 
             // Apply global discount if provided
-            if ($request->discount_percentage > 0) {
-                $totalDiscount = $subtotal * ($request->discount_percentage / 100);
-                $subtotal -= $totalDiscount;
+            $globalDiscountRate = (float) ($request->discount_percentage ?? 0) / 100;
+            if ($globalDiscountRate > 0) {
+                $globalDiscount = $subtotal * $globalDiscountRate;
+                $totalDiscount += $globalDiscount;
+                $subtotal -= $globalDiscount;
+                $totalVat *= 1 - $globalDiscountRate;
             }
 
             // Update invoice totals
@@ -484,11 +490,17 @@ class InvoiceController extends Controller
 
                 $subtotal += $invoiceItem->line_total_excl_vat;
                 $totalVat += ($invoiceItem->line_total_incl_vat - $invoiceItem->line_total_excl_vat);
+                $totalDiscount += (float) $item['price_excl_vat']
+                    * (float) $item['quantity']
+                    * ((float) ($item['discount'] ?? 0) / 100);
             }
 
-            if ($request->discount_percentage > 0) {
-                $totalDiscount = $subtotal * ($request->discount_percentage / 100);
-                $subtotal -= $totalDiscount;
+            $globalDiscountRate = (float) ($request->discount_percentage ?? 0) / 100;
+            if ($globalDiscountRate > 0) {
+                $globalDiscount = $subtotal * $globalDiscountRate;
+                $totalDiscount += $globalDiscount;
+                $subtotal -= $globalDiscount;
+                $totalVat *= 1 - $globalDiscountRate;
             }
 
             $invoice->update([
