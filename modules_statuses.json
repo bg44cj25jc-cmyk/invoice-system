@@ -1,0 +1,12 @@
+{
+    "User": true,
+    "Goal": true,
+    "Home": true,
+    "Patient": true,
+    "Doctor": true,
+    "Template": true,
+    "Tppointment": true,
+    "Appointment": true,
+    "Setting": true,
+    "Chat": true
+}

@@ -1,0 +1,25 @@
+{
+    "name": "nwidart/dashboard",
+    "description": "Dashboard module for Laravel",
+    "type": "library",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Modules\\DashBoard\\": ""
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Modules\\DashBoard\\Providers\\DashBoardServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

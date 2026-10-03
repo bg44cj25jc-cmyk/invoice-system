@@ -1,0 +1,11 @@
+{
+    "name": "DashBoard",
+    "alias": "dashboard",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\DashBoard\\App\\Providers\\DashBoardServiceProvider"
+    ],
+    "files": []
+}

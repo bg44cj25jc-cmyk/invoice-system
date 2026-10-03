@@ -454,6 +454,7 @@ $summary = (clone $baseQuery)
 				$now = Carbon::now();
 				$expiryDate = Carbon::parse($users->plan_expiry_date);
 				if ($expiryDate->lt($now)) {
+					DB::rollBack();
 					return response()->json([
 						'status' => false,
 						'message' => __t('your_plan_has_expired_please_renew_to_continue', $language),
@@ -461,6 +462,7 @@ $summary = (clone $baseQuery)
 				}
 				
 				if($users->is_cancel_plan == 'yes'){
+					DB::rollBack();
 					return response()->json([
 						'status' => false,
 						//'message' => __t('you_have_reached_your_invoice_limit', $language),
@@ -471,6 +473,7 @@ $summary = (clone $baseQuery)
 						$users->invoice_count = ($users->invoice_count - 1);
 						$users->save();
 				}else{
+					DB::rollBack();
 					return response()->json([
 						'status' => false,
 						//'message' => __t('you_have_reached_your_invoice_limit', $language),
@@ -536,12 +539,18 @@ $summary = (clone $baseQuery)
 
 					$subtotal += $invoiceItem->line_total_excl_vat;
 					$totalVat += ($invoiceItem->line_total_incl_vat - $invoiceItem->line_total_excl_vat);
+					$totalDiscount += (float) $item['price_excl_vat']
+						* (float) $item['quantity']
+						* ((float) ($item['discount'] ?? 0) / 100);
 				}
 
 				// Apply global discount if provided
-				if ($request->discount_percentage > 0) {
-					$totalDiscount = $subtotal * ($request->discount_percentage / 100);
-					$subtotal -= $totalDiscount;
+				$globalDiscountRate = (float) ($request->discount_percentage ?? 0) / 100;
+				if ($globalDiscountRate > 0) {
+					$globalDiscount = $subtotal * $globalDiscountRate;
+					$totalDiscount += $globalDiscount;
+					$subtotal -= $globalDiscount;
+					$totalVat *= 1 - $globalDiscountRate;
 				}
 			}
 
@@ -1006,6 +1015,7 @@ if (!$invoice) {
 				$now = Carbon::now();
 				$expiryDate = Carbon::parse($users->plan_expiry_date);
 				if ($expiryDate->lt($now)) {
+					DB::rollBack();
 					return response()->json([
 						'status' => false,
 						'message' => __t('your_plan_has_expired_please_renew_to_continue', $language),
@@ -1013,6 +1023,7 @@ if (!$invoice) {
 				}
 				
 				if($users->is_cancel_plan == 'yes'){
+					DB::rollBack();
 					return response()->json([
 						'status' => false,
 						//'message' => __t('you_have_reached_your_invoice_limit', $language),
@@ -1023,6 +1034,7 @@ if (!$invoice) {
 						$users->invoice_count = ($users->invoice_count - 1);
 						$users->save();
 				}else{
+					DB::rollBack();
 					return response()->json([
 						'status' => false,
 						//'message' => __t('you_have_reached_your_invoice_limit', $language),
@@ -1086,11 +1098,17 @@ if (!$invoice) {
 
                 $subtotal += $invoiceItem->line_total_excl_vat;
                 $totalVat += ($invoiceItem->line_total_incl_vat - $invoiceItem->line_total_excl_vat);
+                $totalDiscount += (float) $item['price_excl_vat']
+                    * (float) $item['quantity']
+                    * ((float) ($item['discount'] ?? 0) / 100);
             }
 
-            if ($request->discount_percentage > 0) {
-                $totalDiscount = $subtotal * ($request->discount_percentage / 100);
-                $subtotal -= $totalDiscount;
+            $globalDiscountRate = (float) ($request->discount_percentage ?? 0) / 100;
+            if ($globalDiscountRate > 0) {
+                $globalDiscount = $subtotal * $globalDiscountRate;
+                $totalDiscount += $globalDiscount;
+                $subtotal -= $globalDiscount;
+                $totalVat *= 1 - $globalDiscountRate;
             }
 
             $invoice->update([

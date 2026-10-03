@@ -1,0 +1,8 @@
+{
+    "Login": true,
+    "DashBoard": true,
+    "Category": true,
+    "Goal": true,
+    "General": true,
+    "Doctor": true
+}
